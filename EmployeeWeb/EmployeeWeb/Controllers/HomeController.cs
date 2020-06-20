@@ -6,60 +6,82 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using EmployeeWeb.Models;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
+using System.Text.Json;
+using System.IO;
+using System.Text;
 
 namespace EmployeeWeb.Controllers
 {
 
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private static Dictionary<int, Employee> _empMap = new Dictionary<int, Employee>();
+        private readonly IHttpClientFactory _clientFactory;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IHttpClientFactory clientFactory)
         {
-            _logger = logger;
+            _clientFactory = clientFactory;
+        }
 
-            if (_empMap.Count == 0)
+        public IEnumerable<Employee> AllEmployees { get; private set; }
+
+        public async Task<IActionResult> IndexAsync()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                        "http://localhost/api/employees");
+
+            request.Headers.Add("Accept", "application/json; charset=utf-8");
+            request.Headers.Add("User-Agent", "EmployeeWeb");
+
+            var client = _clientFactory.CreateClient();
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
             {
-                _empMap[1] = new Employee { Id = 1, FirstName = "Jim", LastName = "Smith", PhoneNumber = "760-000-0001" };
-                _empMap[2] = new Employee { Id = 2, FirstName = "Aaron", LastName = "Bentley", PhoneNumber = "760-000-0002" };
-                _empMap[3] = new Employee { Id = 3, FirstName = "Sarah", LastName = "Francis", PhoneNumber = "760-000-0003" };
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                AllEmployees = await JsonSerializer.DeserializeAsync
+                    <IEnumerable<Employee>>(responseStream);
             }
-        }
-
-        public IActionResult Index()
-        {
-            List<Employee> emplist = new List<Employee>();
-
-            foreach (var item in _empMap) {
-                emplist.Add(item.Value);
+            else
+            {
+                AllEmployees = Array.Empty<Employee>();
             }
 
-            return View(emplist);
+            return View(AllEmployees);
         }
 
-        public IActionResult Add(Employee model)
+        public async Task<IActionResult> Add(Employee model)
         {
             if (ModelState.IsValid)
             {
-                int newId = 0;
-                foreach (var item in _empMap)
-                {
-                    newId = newId < item.Value.Id ? item.Value.Id : newId;
-                }
-                model.Id = newId + 1;
-                _empMap.Add(model.Id, model);
+                var request = new HttpRequestMessage(HttpMethod.Post,
+                            "http://localhost/api/employees");
+
+                request.Headers.Add("Accept", "application/json; charset=utf-8");
+                request.Headers.Add("User-Agent", "EmployeeWeb");
+
+                string jsonstring = JsonSerializer.Serialize<Employee>(model);
+                request.Content = new StringContent(jsonstring, Encoding.UTF8, "application/json");
+
+                var client = _clientFactory.CreateClient();
+                await client.SendAsync(request);
             }
 
-            return Redirect("/Home/Index");
+            return(Redirect("/Home/Index"));
         }
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (_empMap.ContainsKey(id))
-            {
-                _empMap.Remove(id);
-            }
+            string uri = "http://localhost/api/employees/" + id;
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+
+            request.Headers.Add("Accept", "application/json; charset=utf-8");
+            request.Headers.Add("User-Agent", "EmployeeWeb");
+
+            var client = _clientFactory.CreateClient();
+            await client.SendAsync(request);
 
             return Redirect("/Home/Index");
         }
