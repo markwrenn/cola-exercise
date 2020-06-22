@@ -10,7 +10,7 @@ namespace EmployeeService.Controllers
     public class EmployeesController : ControllerBase
     {
         private static IData db = new MockDatabase();
-        
+
         // GET api/employees
         [HttpGet]
         public ActionResult<IEnumerable<Employee>> GetAllEmployees()
@@ -41,7 +41,7 @@ namespace EmployeeService.Controllers
         [HttpDelete("{id}")]
         public ActionResult DeleteEmployee(int id)
         {
-            if(db.Delete(id))
+            if (db.Delete(id))
             {
                 return Ok();
             }
