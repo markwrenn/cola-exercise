@@ -7,6 +7,8 @@
 <div class="text-center">
     <h1 class="display-4">Employee Web App</h1>
 
+    @Html.ValidationSummary()
+
     <table class="table table-hover">
         <thead>
             <tr>
@@ -30,21 +32,21 @@
     </table>
 </div>
 <div>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Add Employee</button>
+    <a class="btn btn-primary" href="/Home/Add?firstpass=true" role="button">Add Employee</a>
 </div>
 
-<div class="modal" id="myModal">
+<!--<div class="modal" id="myModal">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content">-->
 
             <!-- Modal Header -->
-            <div class="modal-header">
+            <!--<div class="modal-header">
                 <h4 class="modal-title">Add Employee</h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
+            </div>-->
 
             <!-- Modal body -->
-            <div class="modal-body">
+            <!--<div class="modal-body">
                 <form action="/home/add" method="post">
                     <div class="form-group">
                         <label for="FirstName">First Name:</label>
@@ -60,13 +62,13 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Add</button>
                 </form>
-            </div>
+            </div>-->
 
             <!-- Modal footer -->
-            <div class="modal-footer">
+            <!--<div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
             </div>
 
         </div>
     </div>
-</div>
+</div>-->

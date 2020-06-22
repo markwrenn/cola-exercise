@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EmployeeWeb.Controllers
 {
@@ -31,7 +32,6 @@ namespace EmployeeWeb.Controllers
             var request = new HttpRequestMessage(HttpMethod.Get,
                         "http://localhost/api/employees");
 
-            request.Headers.Add("Accept", "application/json; charset=utf-8");
             request.Headers.Add("User-Agent", "EmployeeWeb");
 
             var client = _clientFactory.CreateClient();
@@ -51,25 +51,46 @@ namespace EmployeeWeb.Controllers
             return View(AllEmployees);
         }
 
+        public JsonResult ValidatePhone(string phoneNumber)
+        {
+            string MatchPhoneNumberPattern = "^\\(?([0-9]{3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$";
+
+            bool isMatch = Regex.IsMatch(phoneNumber, MatchPhoneNumberPattern);
+
+            return Json(isMatch);
+        }
+
+
         public async Task<IActionResult> Add(Employee model)
         {
-            if (ModelState.IsValid)
+            if(HttpContext.Request.Query["firstpass"].Count == 0 )
             {
-                var request = new HttpRequestMessage(HttpMethod.Post,
-                            "http://localhost/api/employees");
+                //ModelState.AddModelError("PhoneNumber", "testing this idea");
 
-                request.Headers.Add("Accept", "application/json; charset=utf-8");
-                request.Headers.Add("User-Agent", "EmployeeWeb");
+                if (ModelState.IsValid)
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Post,
+                                "http://localhost/api/employees");
 
-                string jsonstring = JsonSerializer.Serialize<Employee>(model);
-                request.Content = new StringContent(jsonstring, Encoding.UTF8, "application/json");
+                    request.Headers.Add("User-Agent", "EmployeeWeb");
 
-                var client = _clientFactory.CreateClient();
-                await client.SendAsync(request);
+                    string jsonstring = JsonSerializer.Serialize<Employee>(model);
+                    request.Content = new StringContent(jsonstring, Encoding.UTF8, "application/json");
+
+                    var client = _clientFactory.CreateClient();
+                    await client.SendAsync(request);
+                }
+            } else
+            {
+                // First time through skip any validation errors
+                ModelState.ClearValidationState("firstName");
+                ModelState.ClearValidationState("lastname");
+                ModelState.ClearValidationState("phoneNumber");
             }
 
-            return(Redirect("/Home/Index"));
+            return (View());
         }
+
 
         public async Task<IActionResult> Delete(int id)
         {
@@ -77,7 +98,6 @@ namespace EmployeeWeb.Controllers
 
             var request = new HttpRequestMessage(HttpMethod.Delete, uri);
 
-            request.Headers.Add("Accept", "application/json; charset=utf-8");
             request.Headers.Add("User-Agent", "EmployeeWeb");
 
             var client = _clientFactory.CreateClient();
