@@ -9,7 +9,8 @@ namespace EmployeeService.Controllers
     [ApiController]
     public class EmployeesController : ControllerBase
     {
-        private static IData db = new MockDatabase();
+        // private static IData db = new MockDatabase();
+        private static IData db = new OracleDatabase();
 
         // GET api/employees
         [HttpGet]
