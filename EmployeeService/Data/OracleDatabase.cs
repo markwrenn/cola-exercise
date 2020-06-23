@@ -9,14 +9,17 @@ namespace EmployeeService.Data
     public class OracleDatabase : IData
     {
         private static OracleConnection _con;
+        private static string _connstr;
 
-        public OracleDatabase()
+        public OracleDatabase(string connstr)
         {
+            _connstr = connstr;
         }
+
         public Employee Add(Employee emp)
         {
-            string connstr = "User Id=SYSTEM;Password=OracleDB1;Data Source=172.16.163.129:1521/XE;";
-            _con = new OracleConnection(connstr);
+            // string connstr = "User Id=SYSTEM;Password=OracleDB1;Data Source=172.16.163.129:1521/XE;";
+            _con = new OracleConnection(_connstr);
 
             using (_con)
             {
@@ -46,8 +49,8 @@ namespace EmployeeService.Data
 
         public bool Delete(int Id)
         {
-            string connstr = "User Id=SYSTEM;Password=OracleDB1;Data Source=172.16.163.129:1521/XE;";
-            _con = new OracleConnection(connstr);
+            // string _connstr = "User Id=SYSTEM;Password=OracleDB1;Data Source=172.16.163.129:1521/XE;";
+            _con = new OracleConnection(_connstr);
 
             using (_con)
             {
@@ -77,8 +80,8 @@ namespace EmployeeService.Data
         {
             List<Employee> list = new List<Employee>();
 
-            string connstr = "User Id=SYSTEM;Password=OracleDB1;Data Source=172.16.163.129:1521/XE;";
-            _con = new OracleConnection(connstr);
+            // string connstr = "User Id=SYSTEM;Password=OracleDB1;Data Source=172.16.163.129:1521/XE;";
+            _con = new OracleConnection(_connstr);
 
             using (_con)
             {
